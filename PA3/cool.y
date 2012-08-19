@@ -148,7 +148,7 @@
 
     /* Precedence declarations go here. */
     /* the bottom, the precedence is higher*/
-    %right        IN
+    %nonassoc     IN
     %right        ASSIGN "<-"
     %left         NOT
     %nonassoc     "<=" '<' '='
@@ -202,7 +202,7 @@
       SET_NODELOC(@6);
       $$ = class_($2,$4,$6,stringtable.add_string(curr_filename)); 
     }
-    | error
+    | error 
     {}
     ;
     
@@ -211,13 +211,13 @@
     {   
       $$ = nil_Features(); 
     }
-    | feature ';'                   /* single feature */
+    | feature ';'                 /* single feature */
     {
       @$ = @1;
       SET_NODELOC(@1);
       $$ = single_Features($1);
     }
-    | feature_list feature ';'    /* mutil features */
+    | feature_list feature ';'   /* mutil features */
     {     
       @$ = @2;
       SET_NODELOC(@2);
@@ -314,7 +314,9 @@
       @$ = @2;
       SET_NODELOC(@2);
       $$ = append_Expressions($1, single_Expressions($2));
-    }
+    } 
+    | error ';'
+    { }
     ;
 
     expr_let_part_1 : LET expr_let_part_2
@@ -349,6 +351,10 @@
       SET_NODELOC(@7);
       $$ = let($1, $3, $5, $7);
     }
+    | error IN  expr
+    {}
+    | error ',' expr_let_part_2
+    {}
     ;
 
     expr_case_list    : OBJECTID ':' TYPEID DARROW  expr ';' 
@@ -366,7 +372,6 @@
       $$ = append_Cases($1, single_Cases(branch($2, $4, $6)));
     }
     ;
-
 
     /* expr grammar */
     expr        : OBJECTID ASSIGN expr
@@ -526,10 +531,6 @@
       @$ = @1;
       SET_NODELOC(@1);
 	  $$ = bool_const($1);
-    }
-    | error
-    {
-      
     }
     ;
     
